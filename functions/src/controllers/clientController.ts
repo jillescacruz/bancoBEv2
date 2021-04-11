@@ -30,7 +30,9 @@ const getClient = async (req: Request, res: Response) => {
         client.name=req.body.name;
         client.email=req.body.email;
         client.rutWithOutVd=req.body.rutWithOutVd;
-
+        client.bankCode=req.body.bankCode;
+        client.accountType=req.body.accountType;
+        client.accountNumber=req.body.accountNumber;
          await clientService.addClient(client);
       
         return res.status(201).json({message:"ok"})

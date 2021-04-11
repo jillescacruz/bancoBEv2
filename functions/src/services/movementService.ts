@@ -3,7 +3,7 @@ import { db } from '../config/firebase'
 class MovementService{
     async getHistory(rut:string){
         let response:any =[]
-        await db.collection("movements").where('rutWithOutVd','==',rut).get().then((snapshot)=>{
+        await db.collection("movements").where('rutWithOutVd','==',rut).orderBy("date", "desc").get().then((snapshot)=>{
            snapshot.docs.forEach(doc=>{
                console.log(doc.data());
                const resp={
@@ -16,7 +16,8 @@ class MovementService{
                    email: doc.data().email,
                    accountType: doc.data().accountType,
                    amount: doc.data().amount,
-                   date: doc.data().date
+                   date: doc.data().date,
+                   type: doc.data().type
                }
                response.push(resp);
            })
@@ -56,8 +57,8 @@ class MovementService{
             //Verify amount for transfer
             var clients =  db.collection('clients');
     
-            var clientsSnapShot = await clients.doc(rut).get();
-            var total=clientsSnapShot.data()?.totalAmount;
+            var clientOriginSnapShot = await clients.doc(rut).get();
+            var total=clientOriginSnapShot.data()?.totalAmount;
     
             console.log('Monto Total: '+total);
     
@@ -101,37 +102,52 @@ class MovementService{
             });
     
     
-    
-            /////////////////<---------------------//////////////////////
-            ///
-            //CREATE MOVEMENT TRANSFER FOR "TO"
-            /*
-            await db.collection('movements').doc().create({
-                rutWithOutVd:req.body.rutWithOutVdTrans,
-                type:'TRANSFER_FROM',
-                amount: req.body.amount,
-                rutWithOutVdTrans:req.body.rutWithOutVd,
-                date:Date.now()
-            })
-    
+            var destinataryClient =  db.collection('clients');
+            var clientsSnapShot = await destinataryClient.doc(destinatary?.rutDestinataryWithOutVd).get();
             
-            //SUM AMOUNT AND UPDATE TOTAL AMOUNT FOR "TO"
-            var movementSnap = await db.collection('movements').where('rutWithOutVd','==',req.body.rutWithOutVdTrans).get();
+            if(clientsSnapShot!=null && clientsSnapShot.data()!=undefined && 
+                destinatary?.bankCode==clientsSnapShot.data()?.bankCode && 
+                destinatary?.accountNumber==clientsSnapShot.data()?.accountNumber){
+
+
+                console.log('CLIENTE DESTINO: '+clientsSnapShot.id);
+                console.log('CLIENTE DESTINO: '+clientsSnapShot.data());
+                //var snap=clientsSnapShot.data();
+                //CREATE MOVEMENT TRANSFER FOR "TO"
+                await db.collection('movements').doc().create({
+                    rutWithOutVd:destinatary?.rutDestinataryWithOutVd,
+                    type:'TRANSFER_FROM',
+                    amount: amount,
+                    rutDestinataryWithOutVd:rut,
+                    name:clientOriginSnapShot.data()?.name,
+                    bankCode:clientOriginSnapShot.data()?.bankCode,
+                    accountType:clientOriginSnapShot.data()?.accountType,
+                    accountNumber:clientOriginSnapShot.data()?.accountNumber,
+                    date:Date.now()
+                })
         
-            var total =0;
-            movementSnap.forEach(doc => {
-                console.log('Monto: '+doc.data().amount);
-                total= total + doc.data().amount;
-            });
+                
+                //SUM AMOUNT AND UPDATE TOTAL AMOUNT FOR "TO"
+                var movementSnap = await db.collection('movements').where('rutWithOutVd','==',destinatary?.rutDestinataryWithOutVd).get();
             
-            console.log('TOTAL FROM: '+total);
-            var clientsSnapShotTrans =  clients.doc(req.body.rutWithOutVdTrans);
-            await clientsSnapShotTrans.update({
-                totalAmount:total
-            });
-    
-    
-            */
+                var totalDest:any=0;
+                movementSnap.forEach(doc => {
+                    console.log('Monto: '+doc.data().amount);
+                    totalDest= totalDest + doc.data().amount;
+                });
+                
+                console.log('TOTAL FROM: '+totalDest);
+                var clientsSnapShotTrans =  clients.doc(destinatary?.rutDestinataryWithOutVd);
+                await clientsSnapShotTrans.update({
+                    totalAmount:totalDest
+                });
+        
+        
+                
+            }else{
+                console.log('Cliente es de otro banco.');
+            }
+
             console.log('END---');
             return total;
         }catch(error) {

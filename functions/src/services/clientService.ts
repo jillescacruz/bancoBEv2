@@ -13,6 +13,9 @@ class ClientService{
                 rutWithOutVd:client.rutWithOutVd,
                 email:client.email,
                 name: client.name,
+                bankCode:client.bankCode,
+                accountType:client.accountType,
+                accountNumber:client.accountNumber,
                 totalAmount:0
             })
        
