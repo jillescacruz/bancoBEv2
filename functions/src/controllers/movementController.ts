@@ -20,7 +20,15 @@ const getHistory = async (req: Request, res: Response) => {
     } catch(error) { return res.status(500).json(error.message) }
   }
 
+  const transfer= async (req: Request, res: Response) => {
+    try {
+        const totalAmount = await movementService.transfer(req.body.rutWithOutVd, req.body.amount, req.body.key);
+      
+        return res.status(201).json({totalAmount})
+    } catch(error) { return res.status(500).json(error.message) }
+  }
 
 
 
-export {getHistory,deposit}
+
+export {getHistory,deposit,transfer}
