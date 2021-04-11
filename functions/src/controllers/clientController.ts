@@ -8,9 +8,18 @@ import clientService from '../services/clientService'
 const getClient = async (req: Request, res: Response) => {
     try {
         const {rut}=req.params
-        const querySnapshot = await clientService.getClientData(rut);
+        const userData = await clientService.getClientData(rut);
       
-        return res.status(200).json(querySnapshot)
+        return res.status(200).json({userData})
+    } catch(error) { return res.status(500).json(error.message) }
+  }
+
+  const getClientByEmail = async (req: Request, res: Response) => {
+    try {
+        const {email}=req.params
+        const userData = await clientService.getClientDataByEmail(email);
+        console.log("Que tengo?"+userData);
+        return res.status(200).json({userData})
     } catch(error) { return res.status(500).json(error.message) }
   }
 
@@ -30,7 +39,6 @@ const getClient = async (req: Request, res: Response) => {
 
   const addDestinatary = async (req: Request, res: Response) => {
     try {
-        console.log("Entré?????");
         var destinatary=new Destinatary()
         destinatary.rutOriginWithOutVd=req.body.rutOriginWithOutVd,
         destinatary.name=req.body.name;
@@ -47,4 +55,13 @@ const getClient = async (req: Request, res: Response) => {
     } catch(error) { return res.status(500).json(error.message) }
   }
 
-export { getClient,addClient, addDestinatary }
+  const getDestinataries = async (req: Request, res: Response) => {
+    try {
+        const {rut}=req.params
+        const response = await clientService.getDestinataries(rut);
+      
+        return res.status(200).json({response})
+    } catch(error) { return res.status(500).json(error.message) }
+  }
+
+export { getClient,addClient, addDestinatary,getClientByEmail,getDestinataries}
