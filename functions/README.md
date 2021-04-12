@@ -32,5 +32,5 @@ Ej en windows: set GOOGLE_APPLICATION_CREDENTIALS=C:\XXX\credenciales.json
 
 Consideraciones:
    - Faltan pruebas unitarias
-   - Falta validar token vs autorización.
+
    
